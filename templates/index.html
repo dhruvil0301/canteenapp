@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Canteen Billing System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Dashboard</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ url_for('new_order') }}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-plus"></i> New Order
+            </a>
+            <a href="{{ url_for('add_customer') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-user-plus"></i> Add Faculty
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card border-0 shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">
+                            Total Faculty</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ total_customers }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card border-0 shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">
+                            Total Orders</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ total_orders }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-shopping-cart fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card border-0 shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">
+                            Total Revenue</div>
+                        <div class="h5 mb-0 font-weight-bold">₹{{ "%.2f"|format(total_revenue) }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-rupee-sign fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card border-0 shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">
+                            Today's Orders</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ today_orders }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar-day fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 justify-content-center">
+                    <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+                        <a href="{{ url_for('new_order') }}" class="btn btn-primary btn-lg w-100 h-100 d-flex flex-column align-items-center justify-content-center">
+                            <i class="fas fa-plus fa-2x mb-2"></i>
+                            <span>New Order</span>
+                        </a>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+                        <a href="{{ url_for('add_customer') }}" class="btn btn-success btn-lg w-100 h-100 d-flex flex-column align-items-center justify-content-center">
+                            <i class="fas fa-user-plus fa-2x mb-2"></i>
+                            <span>Add Faculty</span>
+                        </a>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+                        <a href="{{ url_for('add_menu_item') }}" class="btn btn-info btn-lg w-100 h-100 d-flex flex-column align-items-center justify-content-center">
+                            <i class="fas fa-plus fa-2x mb-2"></i>
+                            <span>Add Menu Item</span>
+                        </a>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+                        <a href="{{ url_for('reports') }}" class="btn btn-warning btn-lg w-100 h-100 d-flex flex-column align-items-center justify-content-center">
+                            <i class="fas fa-chart-bar fa-2x mb-2"></i>
+                            <span>View Reports</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Recent Reports</h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <a href="{{ url_for('weekly_report') }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Weekly Report</h6>
+                            <small class="text-muted">Last 7 days</small>
+                        </div>
+                        <p class="mb-1">View sales and revenue for the past week</p>
+                    </a>
+                    <a href="{{ url_for('monthly_report') }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Monthly Report</h6>
+                            <small class="text-muted">Last 30 days</small>
+                        </div>
+                        <p class="mb-1">View sales and revenue for the past month</p>
+                    </a>
+                    <a href="{{ url_for('yearly_report') }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Yearly Report</h6>
+                            <small class="text-muted">Last 365 days</small>
+                        </div>
+                        <p class="mb-1">View sales and revenue for the past year</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

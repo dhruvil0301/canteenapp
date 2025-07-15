@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Order - Canteen Billing System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Edit Order #{{ order.id }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('order_detail', order_id=order.id) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Order
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Edit Order Details</h6>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="orderForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="customer_id" class="form-label">Faculty *</label>
+                            <select class="form-control" id="customer_id" name="customer_id" required>
+                                {% for faculty in customers %}
+                                <option value="{{ faculty.id }}" {% if faculty.id == order.customer_id %}selected{% endif %}>{{ faculty.name }} ({{ faculty.phone }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="payment_method" class="form-label">Payment Method</label>
+                            <select class="form-control" id="payment_method" name="payment_method">
+                                <option value="cash" {% if order.payment_method == 'cash' %}selected{% endif %}>Cash</option>
+                                <option value="card" {% if order.payment_method == 'card' %}selected{% endif %}>Card</option>
+                                <option value="upi" {% if order.payment_method == 'upi' %}selected{% endif %}>UPI</option>
+                                <option value="online" {% if order.payment_method == 'online' %}selected{% endif %}>Online</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-control" id="status" name="status">
+                                <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>Completed</option>
+                                <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="order_date" class="form-label">Order Date & Time</label>
+                        <input type="datetime-local" class="form-control" id="order_date" name="order_date" value="{{ order.order_date.strftime('%Y-%m-%dT%H:%M') }}">
+                    </div>
+
+                    <h6 class="mb-3">Edit Menu Items</h6>
+                    <div class="row">
+                        {% for item in menu_items %}
+                        {% set order_item = (order.order_items|selectattr('menu_item_id', 'equalto', item.id)|list).0 %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="card-title mb-1">{{ item.name }}</h6>
+                                            <span class="badge bg-secondary">{{ item.category or 'Uncategorized' }}</span>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="fw-bold text-primary mb-2">₹{{ "%.2f"|format(item.price) }}</div>
+                                            <input type="number" class="form-control form-control-sm" 
+                                                   name="item_{{ item.id }}" 
+                                                   placeholder="Qty" 
+                                                   min="0" 
+                                                   style="width: 80px;"
+                                                   value="{{ order_item.quantity if order_item else '' }}"
+                                                   onchange="calculateTotal()">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{{ url_for('order_detail', order_id=order.id) }}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update Order
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Order Summary</h6>
+            </div>
+            <div class="card-body">
+                <div id="orderSummary">
+                    <p class="text-muted">Edit quantities to see order summary</p>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between">
+                    <strong>Total Amount:</strong>
+                    <strong id="totalAmount">₹{{ "%.2f"|format(order.total_amount) }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function calculateTotal() {
+    let total = 0;
+    let summary = '';
+    const inputs = document.querySelectorAll('input[name^="item_"]');
+    inputs.forEach(input => {
+        const quantity = parseInt(input.value) || 0;
+        if (quantity > 0) {
+            const itemId = input.name.split('_')[1];
+            const itemCard = input.closest('.card');
+            const itemName = itemCard.querySelector('.card-title').textContent;
+            const itemPrice = parseFloat(itemCard.querySelector('.text-primary').textContent.replace('₹', ''));
+            const itemTotal = quantity * itemPrice;
+            total += itemTotal;
+            summary += `<div class="d-flex justify-content-between mb-1">
+                <span>${itemName} (${quantity}x)</span>
+                <span>₹${itemTotal.toFixed(2)}</span>
+            </div>`;
+        }
+    });
+    document.getElementById('orderSummary').innerHTML = summary || '<p class="text-muted">Edit quantities to see order summary</p>';
+    document.getElementById('totalAmount').textContent = `₹${total.toFixed(2)}`;
+}
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('input[name^="item_"]');
+    inputs.forEach(input => {
+        input.addEventListener('change', calculateTotal);
+        input.addEventListener('input', calculateTotal);
+    });
+});
+</script>
+{% endblock %} 

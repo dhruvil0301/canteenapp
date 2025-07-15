@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Zydus Canteen Billing System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .floating-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .shape:nth-child(1) {
+            width: 100px;
+            height: 100px;
+            top: 15%;
+            left: 5%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            width: 80px;
+            height: 80px;
+            top: 70%;
+            right: 5%;
+            animation-delay: 2s;
+        }
+
+        .shape:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 30%;
+            left: 85%;
+            animation-delay: 4s;
+        }
+
+        .shape:nth-child(4) {
+            width: 120px;
+            height: 120px;
+            top: 80%;
+            left: 20%;
+            animation-delay: 6s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
+            50% { transform: translateY(-30px) rotate(180deg) scale(1.1); }
+        }
+
+        .register-container {
+            position: relative;
+            z-index: 2;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            max-width: 500px;
+            width: 90%;
+            transform: translateY(50px) scale(0.9);
+            opacity: 0;
+            animation: slideUpScale 1s ease forwards;
+        }
+
+        @keyframes slideUpScale {
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .register-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .register-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shimmer 4s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .register-header h3 {
+            position: relative;
+            z-index: 1;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            animation: fadeInDown 1s ease 0.3s both;
+        }
+
+        .register-header p {
+            position: relative;
+            z-index: 1;
+            opacity: 0.9;
+            font-size: 1.1rem;
+            animation: fadeInUp 1s ease 0.5s both;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .register-body {
+            padding: 3rem 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.8rem;
+            opacity: 0;
+            transform: translateX(-30px);
+            animation: slideInLeft 0.6s ease forwards;
+        }
+
+        .form-group:nth-child(1) { animation-delay: 0.6s; }
+        .form-group:nth-child(2) { animation-delay: 0.8s; }
+        .form-group:nth-child(3) { animation-delay: 1s; }
+        .form-group:nth-child(4) { animation-delay: 1.2s; }
+
+        @keyframes slideInLeft {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.8rem;
+            display: block;
+            font-size: 1.1rem;
+        }
+
+        .input-group {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .input-group:focus-within {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .input-group-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control {
+            border: none;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            box-shadow: none;
+            outline: none;
+        }
+
+        .eye-btn {
+            background: none;
+            border: none;
+            color: #667eea;
+            padding: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .eye-btn:hover {
+            color: #764ba2;
+            transform: scale(1.1);
+        }
+
+        .password-strength {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .strength-weak { background: rgba(220, 53, 69, 0.1); }
+        .strength-fair { background: rgba(255, 193, 7, 0.1); }
+        .strength-good { background: rgba(13, 202, 240, 0.1); }
+        .strength-strong { background: rgba(25, 135, 84, 0.1); }
+
+        .btn-register {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            width: 100%;
+            color: white;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            animation: fadeIn 0.6s ease 1.4s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .btn-register::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-register:hover::before {
+            left: 100%;
+        }
+
+        .btn-register:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-register:active {
+            transform: translateY(-1px);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #eee;
+            opacity: 0;
+            animation: fadeIn 0.6s ease 1.6s forwards;
+        }
+
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .login-link a:hover {
+            color: #764ba2;
+        }
+
+        .alert {
+            border-radius: 12px;
+            border: none;
+            margin-bottom: 1.5rem;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #e9ecef;
+            border-radius: 2px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #dc3545, #ffc107, #0dcaf0, #198754);
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+
+        /* Loading animation */
+        .loading {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 576px) {
+            .register-container {
+                width: 95%;
+                margin: 1rem;
+            }
+            
+            .register-header, .register-body {
+                padding: 2rem 1.5rem;
+            }
+            
+            .register-header h3 {
+                font-size: 1.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <div class="register-container">
+        <div class="register-header">
+            <h3><i class="fas fa-user-plus"></i> Create Account</h3>
+            <p class="mb-0">Join our canteen billing system</p>
+        </div>
+        
+        <div class="register-body">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                            <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'info-circle' }}"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" id="registerForm">
+                <div class="form-group">
+                    <label for="username" class="form-label">
+                        <i class="fas fa-user"></i> Username
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-user"></i>
+                        </span>
+                        <input type="text" class="form-control" id="username" name="username" 
+                               placeholder="Choose a unique username" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email" class="form-label">
+                        <i class="fas fa-envelope"></i> Email
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-envelope"></i>
+                        </span>
+                        <input type="email" class="form-control" id="email" name="email" 
+                               placeholder="Enter your email address" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password" class="form-label">
+                        <i class="fas fa-lock"></i> Password
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <input type="password" class="form-control" id="password" name="password" 
+                               placeholder="Create a strong password" required>
+                        <button class="btn eye-btn" type="button" id="togglePassword">
+                            <i class="fas fa-eye" id="eyeIcon"></i>
+                        </button>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <div id="passwordStrength" class="password-strength"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirm_password" class="form-label">
+                        <i class="fas fa-lock"></i> Confirm Password
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                               placeholder="Confirm your password" required>
+                        <button class="btn eye-btn" type="button" id="toggleConfirmPassword">
+                            <i class="fas fa-eye" id="eyeConfirmIcon"></i>
+                        </button>
+                    </div>
+                    <div id="passwordMatch" class="mt-2"></div>
+                </div>
+                
+                <button type="submit" class="btn btn-register" id="registerBtn">
+                    <span class="btn-text">
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </span>
+                    <div class="loading">
+                        <div class="spinner"></div>
+                    </div>
+                </button>
+            </form>
+            
+            <div class="login-link">
+                <p class="mb-0">Already have an account? 
+                    <a href="{{ url_for('login') }}">Sign in here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Password visibility toggles
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eyeIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            }
+        });
+
+        document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
+            const confirmPasswordInput = document.getElementById('confirm_password');
+            const eyeConfirmIcon = document.getElementById('eyeConfirmIcon');
+            
+            if (confirmPasswordInput.type === 'password') {
+                confirmPasswordInput.type = 'text';
+                eyeConfirmIcon.classList.remove('fa-eye');
+                eyeConfirmIcon.classList.add('fa-eye-slash');
+            } else {
+                confirmPasswordInput.type = 'password';
+                eyeConfirmIcon.classList.remove('fa-eye-slash');
+                eyeConfirmIcon.classList.add('fa-eye');
+            }
+        });
+
+        // Password strength validation
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            let feedback = [];
+
+            // Length check
+            if (password.length >= 8) {
+                strength += 1;
+            } else {
+                feedback.push('At least 8 characters');
+            }
+
+            // Uppercase check
+            if (/[A-Z]/.test(password)) {
+                strength += 1;
+            } else {
+                feedback.push('One uppercase letter');
+            }
+
+            // Lowercase check
+            if (/[a-z]/.test(password)) {
+                strength += 1;
+            } else {
+                feedback.push('One lowercase letter');
+            }
+
+            // Number check
+            if (/[0-9]/.test(password)) {
+                strength += 1;
+            } else {
+                feedback.push('One number');
+            }
+
+            // Special character check
+            if (/[^A-Za-z0-9]/.test(password)) {
+                strength += 1;
+            } else {
+                feedback.push('One special character');
+            }
+
+            return { strength, feedback };
+        }
+
+        // Update password strength display
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            const strengthDiv = document.getElementById('passwordStrength');
+            const progressFill = document.getElementById('progressFill');
+            const { strength, feedback } = checkPasswordStrength(password);
+
+            let strengthText = '';
+            let strengthClass = '';
+            let progressWidth = 0;
+
+            if (password.length === 0) {
+                strengthDiv.innerHTML = '';
+                progressFill.style.width = '0%';
+                return;
+            }
+
+            if (strength <= 2) {
+                strengthText = 'Weak';
+                strengthClass = 'strength-weak text-danger';
+                progressWidth = 25;
+            } else if (strength <= 3) {
+                strengthText = 'Fair';
+                strengthClass = 'strength-fair text-warning';
+                progressWidth = 50;
+            } else if (strength <= 4) {
+                strengthText = 'Good';
+                strengthClass = 'strength-good text-info';
+                progressWidth = 75;
+            } else {
+                strengthText = 'Strong';
+                strengthClass = 'strength-strong text-success';
+                progressWidth = 100;
+            }
+
+            progressFill.style.width = progressWidth + '%';
+            strengthDiv.innerHTML = `
+                <small class="${strengthClass}">
+                    <i class="fas fa-shield-alt"></i> Password Strength: ${strengthText}
+                </small>
+                ${feedback.length > 0 ? '<br><small class="text-muted">Missing: ' + feedback.join(', ') + '</small>' : ''}
+            `;
+        });
+
+        // Password match validation
+        document.getElementById('confirm_password').addEventListener('input', function() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = this.value;
+            const matchDiv = document.getElementById('passwordMatch');
+
+            if (confirmPassword.length === 0) {
+                matchDiv.innerHTML = '';
+                return;
+            }
+
+            if (password === confirmPassword) {
+                matchDiv.innerHTML = '<small class="text-success"><i class="fas fa-check-circle"></i> Passwords match</small>';
+            } else {
+                matchDiv.innerHTML = '<small class="text-danger"><i class="fas fa-times-circle"></i> Passwords do not match</small>';
+            }
+        });
+
+        // Form validation
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+            const { strength } = checkPasswordStrength(password);
+
+            if (strength < 3) {
+                e.preventDefault();
+                alert('Please create a stronger password. It should have at least 3 of the following: 8+ characters, uppercase, lowercase, numbers, and special characters.');
+                return false;
+            }
+
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                alert('Passwords do not match!');
+                return false;
+            }
+
+            // Show loading animation
+            const btn = document.getElementById('registerBtn');
+            const btnText = btn.querySelector('.btn-text');
+            const loading = btn.querySelector('.loading');
+            
+            btnText.style.display = 'none';
+            loading.style.display = 'block';
+            btn.disabled = true;
+        });
+
+        // Add ripple effect to buttons
+        document.querySelectorAll('.btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                ripple.classList.add('ripple');
+                
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+
+        // Add CSS for ripple effect
+        const style = document.createElement('style');
+        style.textContent = `
+            .btn {
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .ripple {
+                position: absolute;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.3);
+                transform: scale(0);
+                animation: ripple-animation 0.6s linear;
+                pointer-events: none;
+            }
+            
+            @keyframes ripple-animation {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html> 

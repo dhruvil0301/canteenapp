@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}New Order - Canteen Billing System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Create New Order</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('orders') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Orders
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Order Details</h6>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="orderForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="customer_id" class="form-label">Customer *</label>
+                            <select class="form-control" id="customer_id" name="customer_id" required>
+                                <option value="">Select Customer</option>
+                                {% for customer in customers %}
+                                <option value="{{ customer.id }}">{{ customer.name }} ({{ customer.phone }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="payment_method" class="form-label">Payment Method</label>
+                            <select class="form-control" id="payment_method" name="payment_method">
+                                <option value="cash">Cash</option>
+                                <option value="card">Card</option>
+                                <option value="upi">UPI</option>
+                                <option value="online">Online</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3">
+                            <label for="order_date" class="form-label">Order Date & Time</label>
+                            <input type="datetime-local" class="form-control" id="order_date" name="order_date" value="{{ (now or '')|default('') }}">
+                        </div>
+                    </div>
+
+                    <h6 class="mb-3">Select Menu Items</h6>
+                    <div class="row">
+                        {% for item in menu_items %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="card-title mb-1">{{ item.name }}</h6>
+                                            <p class="card-text text-muted small mb-2">{{ item.description or 'No description' }}</p>
+                                            <span class="badge bg-secondary">{{ item.category or 'Uncategorized' }}</span>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="fw-bold text-primary mb-2">₹{{ "%.2f"|format(item.price) }}</div>
+                                            <input type="number" class="form-control form-control-sm" 
+                                                   name="item_{{ item.id }}" 
+                                                   placeholder="Qty" 
+                                                   min="0" 
+                                                   style="width: 80px;"
+                                                   onchange="calculateTotal()">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{{ url_for('orders') }}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Create Order
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Order Summary</h6>
+            </div>
+            <div class="card-body">
+                <div id="orderSummary">
+                    <p class="text-muted">Select items to see order summary</p>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between">
+                    <strong>Total Amount:</strong>
+                    <strong id="totalAmount">₹0.00</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function calculateTotal() {
+    let total = 0;
+    let summary = '';
+    
+    // Get all quantity inputs
+    const inputs = document.querySelectorAll('input[name^="item_"]');
+    
+    inputs.forEach(input => {
+        const quantity = parseInt(input.value) || 0;
+        if (quantity > 0) {
+            const itemId = input.name.split('_')[1];
+            const itemCard = input.closest('.card');
+            const itemName = itemCard.querySelector('.card-title').textContent;
+            const itemPrice = parseFloat(itemCard.querySelector('.text-primary').textContent.replace('₹', ''));
+            const itemTotal = quantity * itemPrice;
+            
+            total += itemTotal;
+            summary += `<div class="d-flex justify-content-between mb-1">
+                <span>${itemName} (${quantity}x)</span>
+                <span>₹${itemTotal.toFixed(2)}</span>
+            </div>`;
+        }
+    });
+    
+    document.getElementById('orderSummary').innerHTML = summary || '<p class="text-muted">Select items to see order summary</p>';
+    document.getElementById('totalAmount').textContent = `₹${total.toFixed(2)}`;
+}
+
+// Add event listeners to all quantity inputs
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('input[name^="item_"]');
+    inputs.forEach(input => {
+        input.addEventListener('change', calculateTotal);
+        input.addEventListener('input', calculateTotal);
+    });
+});
+</script>
+{% endblock %} 

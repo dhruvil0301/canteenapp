@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Menu Items - Canteen Billing System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Menu Items</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('add_menu_item') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Menu Item
+        </a>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">All Menu Items</h6>
+    </div>
+    <div class="card-body">
+        {% if menu_items %}
+        <div class="table-responsive">
+            <table class="table table-bordered" id="menuTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in menu_items %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.description or 'No description' }}</td>
+                        <td>
+                            <span class="badge bg-secondary">{{ item.category or 'Uncategorized' }}</span>
+                        </td>
+                        <td>₹{{ "%.2f"|format(item.price) }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if item.is_available else 'danger' }}">
+                                {{ 'Available' if item.is_available else 'Unavailable' }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('edit_menu_item', item_id=item.id) }}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-list fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No menu items found</h5>
+            <p class="text-muted">Add your first menu item to get started</p>
+            <a href="{{ url_for('add_menu_item') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Menu Item
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    $('#menuTable').DataTable({
+        "order": [[ 0, "desc" ]]
+    });
+});
+</script>
+{% endblock %} 

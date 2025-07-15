@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}{{ customer.name }} - Bill{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">{{ customer.name }} - Bill</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button onclick="window.print()" class="btn btn-warning me-2">
+            <i class="fas fa-print"></i> Print Bill
+        </button>
+        <a href="{{ url_for('customer_detail', customer_id=customer.id) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Customer
+        </a>
+    </div>
+</div>
+
+<!-- Period Selection -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Select Bill Period</h6>
+    </div>
+    <div class="card-body">
+        <div class="btn-group" role="group">
+            <a href="{{ url_for('customer_bill', customer_id=customer.id, period='weekly') }}" 
+               class="btn btn-{{ 'primary' if period == 'weekly' else 'outline-primary' }}">
+                Weekly Bill
+            </a>
+            <a href="{{ url_for('customer_bill', customer_id=customer.id, period='monthly') }}" 
+               class="btn btn-{{ 'primary' if period == 'monthly' else 'outline-primary' }}">
+                Monthly Bill
+            </a>
+            <a href="{{ url_for('customer_bill', customer_id=customer.id, period='yearly') }}" 
+               class="btn btn-{{ 'primary' if period == 'yearly' else 'outline-primary' }}">
+                Yearly Bill
+            </a>
+            <form method="get" action="{{ url_for('customer_bill', customer_id=customer.id) }}" style="display:inline-block; margin-left: 10px;">
+                <input type="hidden" name="period" value="daily">
+                <input type="date" name="date" value="{{ request.args.get('date', '') }}" required style="height: 38px;">
+                <button type="submit" class="btn btn-{{ 'primary' if period == 'daily' else 'outline-primary' }}">Daily Bill</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Customer Information -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Faculty Bill</h6>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Faculty Name:</strong> {{ customer.name }}<br>
+                        <strong>Phone:</strong> {{ customer.phone }}<br>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Bill Period:</strong> {{ period.title() }}<br>
+                        <strong>From:</strong> {{ localize_datetime(start_date).strftime('%B %d, %Y') }}<br>
+                        <strong>To:</strong> {{ localize_datetime(end_date).strftime('%B %d, %Y') }}
+                    </div>
+                </div>
+
+                {% if orders %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" style="margin-top: 20px;">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Date</th>
+                                <th>Item</th>
+                                <th>Qty</th>
+                                <th>Unit Price</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                                {% set item_count = order.order_items|length %}
+                                {% for item in order.order_items %}
+                                <tr>
+                                    {% if loop.first %}
+                                        <td rowspan="{{ item_count }}">#{{ order.id }}</td>
+                                        <td rowspan="{{ item_count }}">{{ localize_datetime(order.order_date).strftime('%d-%m-%Y') }}</td>
+                                    {% endif %}
+                                    <td>{{ item.menu_item.name }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>₹{{ "%.2f"|format(item.unit_price) }}</td>
+                                    <td>₹{{ "%.2f"|format(item.total_price) }}</td>
+                                </tr>
+                                {% endfor %}
+                                <tr>
+                                    <td colspan="5" class="text-end"><strong>Order Total:</strong></td>
+                                    <td><strong>₹{{ "%.2f"|format(order.total_amount) }}</strong></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="5" class="text-end"><strong>Bill Total:</strong></td>
+                                <td><strong>₹{{ "%.2f"|format(total_amount) }}</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-file-invoice fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No orders found for this period</h5>
+                    <p class="text-muted">No orders were placed between {{ localize_datetime(start_date).strftime('%B %d, %Y') }} and {{ localize_datetime(end_date).strftime('%B %d, %Y') }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Bill Summary</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Period:</strong> {{ period.title() }}<br>
+                    <strong>Total Orders:</strong> {{ orders|length }}<br>
+                    <strong>Total Amount:</strong> ₹{{ "%.2f"|format(total_amount) }}
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button onclick="window.print()" class="btn btn-warning">
+                        <i class="fas fa-print"></i> Print Bill
+                    </button>
+                    <a href="{{ url_for('customer_detail', customer_id=customer.id) }}" class="btn btn-info">
+                        <i class="fas fa-user"></i> View Faculty
+                    </a>
+                    <a href="{{ url_for('new_order') }}" class="btn btn-success">
+                        <i class="fas fa-plus"></i> New Order
+                    </a>
+                    <a href="{{ url_for('download_bill_pdf', customer_id=customer.id, period=period, date=request.args.get('date')) }}" class="btn btn-danger" target="_blank">
+                        <i class="fas fa-file-pdf"></i> Download PDF
+                    </a>
+                    {% if customer.phone %}
+                    <a href="https://wa.me/91{{ customer.phone }}?text={{ ('Hello ' ~ customer.name ~ ', your canteen bill for ' ~ period.title() ~ ' is ₹' ~ '%.2f'|format(total_amount))|urlencode }}" target="_blank" class="btn btn-success">
+                        <i class="fab fa-whatsapp"></i> Send via WhatsApp
+                    </a>
+                    {% endif %}
+                    {% if customer.email %}
+                    <a href="mailto:{{ customer.email }}?subject={{ ('Your Canteen Bill for ' ~ period.title())|urlencode }}&body={{ ('Hello ' ~ customer.name ~ ',%0A%0AYour canteen bill for ' ~ period.title() ~ ' is ₹' ~ '%.2f'|format(total_amount) ~ '.%0AThank you!')|urlencode }}" class="btn btn-primary">
+                        <i class="fas fa-envelope"></i> Send via Email
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Print-friendly bill -->
+<div id="printSection">
+    <div style="text-align:center; margin-bottom: 1rem;">
+        <h2 style="margin:0;">Zydus Canteen Billing System</h2>
+        <h4 style="margin:0;">Faculty Bill</h4>
+        <hr style="margin: 0.5rem 0;">
+    </div>
+    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+        <div>
+            <strong>Faculty:</strong> {{ customer.name }}<br>
+            <strong>Phone:</strong> {{ customer.phone }}<br>
+        </div>
+        <div style="text-align:right;">
+            <strong>Bill Period:</strong> {{ period.title() }}<br>
+            <strong>From:</strong> {{ localize_datetime(start_date).strftime('%d-%m-%Y') }}<br>
+            <strong>To:</strong> {{ localize_datetime(end_date).strftime('%d-%m-%Y') }}
+        </div>
+    </div>
+    {% if orders %}
+    <table style="width:100%; border-collapse: collapse; margin-bottom: 1rem;">
+        <thead>
+            <tr style="border-bottom: 1px solid #000;">
+                <th style="text-align:left; padding: 4px;">Order ID</th>
+                <th style="text-align:left; padding: 4px;">Date</th>
+                <th style="text-align:right; padding: 4px;">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td style="padding: 4px;">#{{ order.id }}</td>
+                <td style="padding: 4px;">{{ localize_datetime(order.order_date).strftime('%d-%m-%Y') }}</td>
+                <td style="text-align:right; padding: 4px;">₹{{ "%.2f"|format(order.total_amount) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr style="border-top: 1px solid #000;">
+                <td colspan="2" style="text-align:right; padding: 4px;"><strong>Total:</strong></td>
+                <td style="text-align:right; padding: 4px;"><strong>₹{{ "%.2f"|format(total_amount) }}</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+    {% else %}
+    <div class="text-center py-4">
+        <p>No orders found for this period</p>
+    </div>
+    {% endif %}
+    <div style="text-align:center; margin-top: 1rem;">
+        <p style="margin:0;">Thank you for your business!</p>
+        <small>Generated on {{ localize_datetime(end_date).strftime('%d-%m-%Y %I:%M %p') }}</small>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function printBill() {
+    const printContent = document.getElementById('printSection').innerHTML;
+    const originalContent = document.body.innerHTML;
+    
+    document.body.innerHTML = printContent;
+    window.print();
+    document.body.innerHTML = originalContent;
+}
+</script>
+{% endblock %} 

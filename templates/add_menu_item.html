@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Add Menu Item - Canteen Billing System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Add New Menu Item</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('menu') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Menu
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Menu Item Information</h6>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label">Item Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-control" id="category" name="category">
+                                <option value="">Select Category</option>
+                                <option value="Breakfast">Breakfast</option>
+                                <option value="Lunch">Lunch</option>
+                                <option value="Dinner">Dinner</option>
+                                <option value="Snacks">Snacks</option>
+                                <option value="Beverages">Beverages</option>
+                                <option value="Desserts">Desserts</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="Describe the item..."></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Price (₹) *</label>
+                        <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" required>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('menu') }}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Menu Item
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Report - Zydus Canteen Billing System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Daily Report</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button onclick="window.print()" class="btn btn-warning me-2">
+            <i class="fas fa-print"></i> Print Report
+        </button>
+        <a href="{{ url_for('reports') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Reports
+        </a>
+    </div>
+</div>
+
+<!-- Summary and Orders Table remain unchanged -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Today's Orders</h6>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <strong>Report Period:</strong> {{ localize_datetime(start_date).strftime('%d-%m-%Y %I:%M %p') }} to {{ localize_datetime(end_date).strftime('%d-%m-%Y %I:%M %p') }}<br>
+            </div>
+            <div class="col-md-6 text-end">
+                <strong>Total Orders:</strong> {{ total_orders }}<br>
+                <strong>Total Revenue:</strong> ₹{{ "%.2f"|format(total_revenue) }}
+            </div>
+        </div>
+        {% if orders %}
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Faculty</th>
+                        <th>Date</th>
+                        <th>Items</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>#{{ order.id }}</td>
+                        <td>{{ order.customer.name }}</td>
+                        <td>{{ localize_datetime(order.order_date).strftime('%d-%m-%Y %I:%M %p') }}</td>
+                        <td>
+                            {% for item in order.order_items %}
+                                {{ item.quantity }}x {{ item.menu_item.name }}{% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>₹{{ "%.2f"|format(order.total_amount) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No orders found for today</h5>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Print-friendly version -->
+<div id="printSection">
+    <div style="text-align:center; margin-bottom: 1rem;">
+        <h2 style="margin:0;">Zydus Canteen Billing System</h2>
+        <h4 style="margin:0;">Daily Report</h4>
+        <hr style="margin: 0.5rem 0;">
+    </div>
+    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+        <div>
+            <strong>Report Period:</strong> {{ localize_datetime(start_date).strftime('%d-%m-%Y %I:%M %p') }} to {{ localize_datetime(end_date).strftime('%d-%m-%Y %I:%M %p') }}<br>
+            <strong>Total Orders:</strong> {{ total_orders }}<br>
+            <strong>Total Revenue:</strong> ₹{{ "%.2f"|format(total_revenue) }}
+        </div>
+    </div>
+    {% if orders %}
+    <table style="width:100%; border-collapse: collapse; margin-bottom: 1rem;">
+        <thead>
+            <tr style="border-bottom: 1px solid #000;">
+                <th style="text-align:left; padding: 4px;">Order ID</th>
+                <th style="text-align:left; padding: 4px;">Faculty</th>
+                <th style="text-align:left; padding: 4px;">Date</th>
+                <th style="text-align:left; padding: 4px;">Items</th>
+                <th style="text-align:right; padding: 4px;">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td style="padding: 4px;">#{{ order.id }}</td>
+                <td style="padding: 4px;">{{ order.customer.name }}</td>
+                <td style="padding: 4px;">{{ localize_datetime(order.order_date).strftime('%d-%m-%Y %I:%M %p') }}</td>
+                <td style="padding: 4px;">
+                    {% for item in order.order_items %}
+                        {{ item.quantity }}x {{ item.menu_item.name }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                </td>
+                <td style="text-align:right; padding: 4px;">₹{{ "%.2f"|format(order.total_amount) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="text-center py-4">
+        <p>No orders found for today</p>
+    </div>
+    {% endif %}
+    <div style="text-align:center; margin-top: 1rem;">
+        <p style="margin:0;">Thank you!</p>
+        <small>Generated on {{ localize_datetime(end_date).strftime('%d-%m-%Y %I:%M %p') }}</small>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Chart.js script placeholder -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('dailySalesChart').getContext('2d');
+const dailySalesChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: {{ chart_labels|tojson }},
+        datasets: [{
+            label: 'Sales',
+            data: {{ chart_data|tojson }},
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,76 @@
+{% set bill_title = customer.name ~ ' - Bill' %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ bill_title }}</title>
+    <style>
+        body { font-family: 'DejaVu Sans', 'Arial Unicode MS', Arial, sans-serif; font-size: 13px; }
+        h2, h4 { margin: 0; padding: 0; }
+        table { border-collapse: collapse; width: 100%; margin-top: 16px; }
+        th, td { border: 1px solid #333; padding: 6px; text-align: left; }
+        th { background: #eee; }
+        .summary-table td { border: none; }
+        .right { text-align: right; }
+        .center { text-align: center; }
+    </style>
+</head>
+<body>
+    <h2 class="center">Zydus Canteen Billing System</h2>
+    <h4 class="center">Faculty Bill</h4>
+    <hr>
+    <table class="summary-table" width="100%">
+        <tr>
+            <td><strong>Faculty:</strong> {{ customer.name }}</td>
+            <td><strong>Phone:</strong> {{ customer.phone or '-' }}</td>
+        </tr>
+        <tr>
+            <td><strong>Bill Period:</strong> {{ period.title() }}</td>
+            <td><strong>From:</strong> {{ start_date.strftime('%d-%m-%Y') }} <strong>To:</strong> {{ end_date.strftime('%d-%m-%Y') }}</td>
+        </tr>
+    </table>
+    <table>
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Date</th>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+                {% set item_count = order.order_items|length %}
+                {% for item in order.order_items %}
+                <tr>
+                    {% if loop.first %}
+                        <td rowspan="{{ item_count }}">#{{ order.id }}</td>
+                        <td rowspan="{{ item_count }}">{{ order.order_date.strftime('%d-%m-%Y') }}</td>
+                    {% endif %}
+                    <td>{{ item.menu_item.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>INR {{ '%.2f'|format(item.unit_price) }}</td>
+                    <td>INR {{ '%.2f'|format(item.total_price) }}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="5" class="right"><strong>Order Total:</strong></td>
+                    <td><strong>INR {{ '%.2f'|format(order.total_amount) }}</strong></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="5" class="right"><strong>Bill Total:</strong></td>
+                <td><strong>INR {{ '%.2f'|format(total_amount) }}</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+    <div class="center" style="margin-top: 24px;">
+        <p>Thank you for your business!</p>
+        <small>Generated on {{ end_date.strftime('%d-%m-%Y %I:%M %p') }}</small>
+    </div>
+</body>
+</html> 

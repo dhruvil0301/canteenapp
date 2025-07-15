@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+
+{% block title %}Custom Report - Zydus Canteen Billing System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Custom Report</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button onclick="printCustomReport()" class="btn btn-warning me-2">
+            <i class="fas fa-print"></i> Print Report
+        </button>
+        <button onclick="downloadCustomReportPDF()" class="btn btn-success me-2">
+            <i class="fas fa-file-pdf"></i> Download PDF
+        </button>
+        <a href="{{ url_for('reports') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Reports
+        </a>
+    </div>
+</div>
+
+<!-- Date Range Form -->
+<form method="get" class="mb-3">
+  <label>Start Date: <input type="date" name="start_date" value="{{ request.args.get('start_date', start_date.strftime('%Y-%m-%d')) }}" required></label>
+  <label>End Date: <input type="date" name="end_date" value="{{ request.args.get('end_date', end_date.strftime('%Y-%m-%d')) }}" required></label>
+  <button type="submit" class="btn btn-primary btn-sm">Show Report</button>
+</form>
+
+<!-- Chart Options Form -->
+<form id="chartOptionsForm" class="mb-3">
+  <label>Graph Type:
+    <select id="graphTypeSelect">
+      <option value="line">Line</option>
+      <option value="bar">Bar</option>
+      <option value="radar">Radar</option>
+      <option value="doughnut">Doughnut</option>
+      <option value="pie">Pie</option>
+    </select>
+  </label>
+  <span id="singleColorPickerWrapper">
+    <label class="ms-3">Graph Color:
+      <input type="color" id="graphColorPicker" value="#36a2eb">
+    </label>
+  </span>
+</form>
+<div id="multiColorPickers" class="mb-3" style="display:none;"></div>
+
+<!-- Chart for Date Range Sales -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Sales Chart (Date Range)</h6>
+    </div>
+    <div class="card-body">
+        <canvas id="customSalesChart" width="100%" height="40"></canvas>
+    </div>
+</div>
+
+<!-- Orders Table -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Orders in Selected Range</h6>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <strong>Report Period:</strong> {{ localize_datetime(start_date).strftime('%d-%m-%Y %I:%M %p') }} to {{ localize_datetime(end_date).strftime('%d-%m-%Y %I:%M %p') }}<br>
+            </div>
+            <div class="col-md-6 text-end">
+                <strong>Total Orders:</strong> {{ total_orders }}<br>
+                <strong>Total Revenue:</strong> ₹{{ "%.2f"|format(total_revenue) }}
+            </div>
+        </div>
+        {% if orders %}
+        <div class="table-responsive">
+            <table class="table table-bordered" id="ordersTable">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Faculty</th>
+                        <th>Date</th>
+                        <th>Items</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>#{{ order.id }}</td>
+                        <td>{{ order.customer.name }}</td>
+                        <td>{{ localize_datetime(order.order_date).strftime('%d-%m-%Y %I:%M %p') }}</td>
+                        <td>
+                            {% for item in order.order_items %}
+                                {{ item.quantity }}x {{ item.menu_item.name }}{% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>₹{{ "%.2f"|format(order.total_amount) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No orders found for this period</h5>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Print-friendly version -->
+<div id="printSection" style="display:none;">
+    <div style="text-align:center; margin-bottom: 1rem;">
+        <h2 style="margin:0;">Zydus Canteen Billing System</h2>
+        <h4 style="margin:0;">Custom Report</h4>
+        <hr style="margin: 0.5rem 0;">
+    </div>
+    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+        <div>
+            <strong>Report Period:</strong> {{ localize_datetime(start_date).strftime('%d-%m-%Y %I:%M %p') }} to {{ localize_datetime(end_date).strftime('%d-%m-%Y %I:%M %p') }}<br>
+            <strong>Total Orders:</strong> {{ total_orders }}<br>
+            <strong>Total Revenue:</strong> ₹{{ "%.2f"|format(total_revenue) }}
+        </div>
+    </div>
+    {% if orders %}
+    <table style="width:100%; border-collapse: collapse; margin-bottom: 1rem;">
+        <thead>
+            <tr style="border-bottom: 1px solid #000;">
+                <th style="text-align:left; padding: 4px;">Order ID</th>
+                <th style="text-align:left; padding: 4px;">Faculty</th>
+                <th style="text-align:left; padding: 4px;">Date</th>
+                <th style="text-align:left; padding: 4px;">Items</th>
+                <th style="text-align:right; padding: 4px;">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td style="padding: 4px;">#{{ order.id }}</td>
+                <td style="padding: 4px;">{{ order.customer.name }}</td>
+                <td style="padding: 4px;">{{ localize_datetime(order.order_date).strftime('%d-%m-%Y %I:%M %p') }}</td>
+                <td style="padding: 4px;">
+                    {% for item in order.order_items %}
+                        {{ item.quantity }}x {{ item.menu_item.name }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                </td>
+                <td style="text-align:right; padding: 4px;">₹{{ "%.2f"|format(order.total_amount) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="text-center py-4">
+        <p>No orders found for this period</p>
+    </div>
+    {% endif %}
+    <div style="text-align:center; margin-top: 1rem;">
+        <p style="margin:0;">Thank you!</p>
+        <small>Generated on {{ localize_datetime(end_date).strftime('%d-%m-%Y %I:%M %p') }}</small>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+const ctx = document.getElementById('customSalesChart').getContext('2d');
+const chartLabels = {{ chart_labels|tojson }};
+const chartData = {{ chart_data|tojson }};
+let chartColor = '#36a2eb';
+let chartType = 'line';
+let multiColors = chartLabels.map((_, i) => defaultColor(i));
+
+function defaultColor(i) {
+    // Nice default palette
+    const palette = ['#36a2eb', '#ffcd56', '#ff6384', '#4bc0c0', '#9966ff', '#ff9f40', '#c9cbcf'];
+    return palette[i % palette.length];
+}
+
+const customSalesChart = new Chart(ctx, {
+    type: chartType,
+    data: {
+        labels: chartLabels,
+        datasets: [{
+            label: 'Sales',
+            data: chartData,
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: chartColor,
+            borderWidth: 2,
+            fill: true,
+            tension: 0.3,
+            pointBackgroundColor: chartColor,
+            pointRadius: 4
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Chart options form logic
+const graphTypeSelect = document.getElementById('graphTypeSelect');
+const graphColorPicker = document.getElementById('graphColorPicker');
+const singleColorPickerWrapper = document.getElementById('singleColorPickerWrapper');
+const multiColorPickers = document.getElementById('multiColorPickers');
+
+graphTypeSelect.addEventListener('change', updateChartStyle);
+graphColorPicker.addEventListener('input', updateChartStyle);
+
+function renderMultiColorPickers() {
+    multiColorPickers.innerHTML = '';
+    chartLabels.forEach((label, i) => {
+        const color = multiColors[i] || defaultColor(i);
+        const picker = document.createElement('input');
+        picker.type = 'color';
+        picker.value = color;
+        picker.className = 'form-control form-control-color d-inline-block ms-2';
+        picker.style.width = '2.5rem';
+        picker.title = label;
+        picker.addEventListener('input', () => {
+            multiColors[i] = picker.value;
+            updateChartStyle();
+        });
+        const lbl = document.createElement('label');
+        lbl.innerText = label + ': ';
+        lbl.appendChild(picker);
+        multiColorPickers.appendChild(lbl);
+    });
+}
+
+function updateChartStyle() {
+    chartType = graphTypeSelect.value;
+    if (["doughnut", "pie", "radar"].includes(chartType)) {
+        singleColorPickerWrapper.style.display = 'none';
+        multiColorPickers.style.display = '';
+        if (multiColorPickers.childElementCount !== chartLabels.length) {
+            renderMultiColorPickers();
+        }
+        customSalesChart.data.datasets[0].backgroundColor = multiColors;
+        customSalesChart.data.datasets[0].borderColor = multiColors;
+        customSalesChart.data.datasets[0].pointBackgroundColor = multiColors;
+        customSalesChart.data.datasets[0].fill = chartType === 'radar';
+        customSalesChart.data.datasets[0].tension = 0.3;
+    } else {
+        singleColorPickerWrapper.style.display = '';
+        multiColorPickers.style.display = 'none';
+        chartColor = graphColorPicker.value;
+        let bgColor = chartType === 'line' ? chartColor + '33' : chartColor + '88';
+        customSalesChart.data.datasets[0].backgroundColor = bgColor;
+        customSalesChart.data.datasets[0].borderColor = chartColor;
+        customSalesChart.data.datasets[0].pointBackgroundColor = chartColor;
+        customSalesChart.data.datasets[0].fill = true;
+        customSalesChart.data.datasets[0].tension = 0.3;
+    }
+    customSalesChart.config.type = chartType;
+    customSalesChart.update();
+}
+
+// Initialize multiColors for first render
+renderMultiColorPickers();
+updateChartStyle();
+
+function printCustomReport() {
+    document.getElementById('printSection').style.display = '';
+    window.print();
+    document.getElementById('printSection').style.display = 'none';
+}
+
+async function downloadCustomReportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'pt', 'a4');
+    // Chart to image
+    const chartCanvas = document.getElementById('customSalesChart');
+    const chartImg = chartCanvas.toDataURL('image/png', 1.0);
+    doc.text('Zydus Canteen Billing System', 40, 40);
+    doc.text('Custom Report', 40, 60);
+    doc.addImage(chartImg, 'PNG', 40, 80, 500, 200);
+    // Table to image
+    const tableElem = document.getElementById('ordersTable');
+    if (tableElem) {
+        const tableCanvas = await html2canvas(tableElem);
+        const tableImg = tableCanvas.toDataURL('image/png', 1.0);
+        doc.addPage();
+        doc.text('Orders Table', 40, 40);
+        doc.addImage(tableImg, 'PNG', 40, 60, 500, 0);
+    }
+    doc.save('custom_report.pdf');
+}
+</script>
+{% endblock %} 

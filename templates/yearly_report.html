@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}Yearly Report - Zydus Canteen Billing System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Yearly Report</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button onclick="printReport()" class="btn btn-warning">Print Report</button>
+        <a href="{{ url_for('reports') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Reports
+        </a>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card border-0 shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">
+                            Total Orders</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ total_orders }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-shopping-cart fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card border-0 shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">
+                            Total Revenue</div>
+                        <div class="h5 mb-0 font-weight-bold">₹{{ "%.2f"|format(total_revenue) }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-rupee-sign fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card border-0 shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">
+                            Average Order Value</div>
+                        <div class="h5 mb-0 font-weight-bold">
+                            ₹{{ "%.2f"|format(total_revenue / total_orders if total_orders > 0 else 0) }}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-chart-line fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card border-0 shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">
+                            Period</div>
+                        <div class="h5 mb-0 font-weight-bold">365 Days</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Period -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Report Period</h6>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <strong>Start Date:</strong> {{ localize_datetime(start_date).strftime('%B %d, %Y') }}
+            </div>
+            <div class="col-md-6">
+                <strong>End Date:</strong> {{ localize_datetime(end_date).strftime('%B %d, %Y') }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Orders Table -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Yearly Orders</h6>
+    </div>
+    <div class="card-body">
+        {% if orders %}
+        <div class="table-responsive">
+            <table class="table table-bordered" id="yearlyOrdersTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Items</th>
+                        <th>Total Amount</th>
+                        <th>Status</th>
+                        <th>Payment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>#{{ order.id }}</td>
+                        <td>{{ order.customer.name }}</td>
+                        <td>{{ localize_datetime(order.order_date).strftime('%Y-%m-%d %I:%M %p') }}</td>
+                        <td>
+                            {% for item in order.order_items %}
+                                {{ item.quantity }}x {{ item.menu_item.name }}{% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>₹{{ "%.2f"|format(order.total_amount) }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if order.status == 'completed' else 'warning' if order.status == 'pending' else 'danger' }}">
+                                {{ order.status.title() }}
+                            </span>
+                        </td>
+                        <td>{{ order.payment_method.title() }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No orders found for this period</h5>
+            <p class="text-muted">No orders were placed between {{ localize_datetime(start_date).strftime('%B %d, %Y') }} and {{ localize_datetime(end_date).strftime('%B %d, %Y') }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Bar Chart for Yearly Sales -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Yearly Sales Chart</h6>
+    </div>
+    <div class="card-body">
+        <canvas id="yearlySalesChart" width="100%" height="40"></canvas>
+    </div>
+</div>
+
+<!-- Print-friendly version -->
+<div id="printSection" style="display:none;">
+  <div style="text-align:center; margin-bottom: 1rem;">
+    <h2>Zydus Canteen Billing System</h2>
+    <h4>Yearly Report</h4>
+    <hr>
+  </div>
+  <div>
+    <strong>Report Period:</strong> {{ localize_datetime(start_date).strftime('%d-%m-%Y') }} to {{ localize_datetime(end_date).strftime('%d-%m-%Y') }}
+  </div>
+  <table style="width:100%; border-collapse: collapse; margin-top: 1rem;">
+    <thead>
+      <tr style="border-bottom: 1px solid #000;">
+        <th>Order ID</th>
+        <th>Date</th>
+        <th>Items</th>
+        <th>Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in orders %}
+      <tr>
+        <td>#{{ order.id }}</td>
+        <td>{{ localize_datetime(order.order_date).strftime('%d-%m-%Y') }}</td>
+        <td>
+            {% for item in order.order_items %}
+                {{ item.quantity }}x {{ item.menu_item.name }}{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        </td>
+        <td>₹{{ "%.2f"|format(order.total_amount) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div style="text-align:right; margin-top: 1rem;">
+    <strong>Total Revenue:</strong> ₹{{ '%.2f'|format(total_revenue) }}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    $('#yearlyOrdersTable').DataTable({
+        "order": [[ 0, "desc" ]]
+    });
+});
+
+function printReport() {
+    document.getElementById('printSection').style.display = '';
+    window.print();
+    document.getElementById('printSection').style.display = 'none';
+}
+</script>
+{% endblock %} 

@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Reports & Bills - Canteen Billing System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Reports & Bills</h1>
+</div>
+
+<div class="row">
+    <!-- Sales Reports -->
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Sales Reports</h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <a href="{{ url_for('daily_report') }}" class="list-group-item list-group-item-action">
+                        <span class="fw-bold"><i class="fas fa-calendar-day text-primary"></i> Daily Report</span>
+                        <span class="float-end text-muted">Today</span>
+                        <div class="small text-muted">View sales and revenue for today<br>Includes order details, customer analysis, and revenue breakdown</div>
+                    </a>
+                    <a href="{{ url_for('weekly_report') }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">
+                                <i class="fas fa-calendar-week text-primary"></i> Weekly Report
+                            </h6>
+                            <small class="text-muted">Last 7 days</small>
+                        </div>
+                        <p class="mb-1">View sales and revenue for the past week</p>
+                        <small class="text-muted">Includes order details, customer analysis, and revenue breakdown</small>
+                    </a>
+                    <a href="{{ url_for('monthly_report') }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">
+                                <i class="fas fa-calendar-alt text-success"></i> Monthly Report
+                            </h6>
+                            <small class="text-muted">Last 30 days</small>
+                        </div>
+                        <p class="mb-1">View sales and revenue for the past month</p>
+                        <small class="text-muted">Comprehensive monthly analysis with trends and insights</small>
+                    </a>
+                    <a href="{{ url_for('yearly_report') }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">
+                                <i class="fas fa-calendar text-warning"></i> Yearly Report
+                            </h6>
+                            <small class="text-muted">Last 365 days</small>
+                        </div>
+                        <p class="mb-1">View sales and revenue for the past year</p>
+                        <small class="text-muted">Annual performance overview with growth analysis</small>
+                    </a>
+                    <a href="{{ url_for('custom_report') }}" class="list-group-item list-group-item-action">
+                        <span class="fw-bold"><i class="fas fa-chart-bar text-info"></i> Custom Report</span>
+                        <span class="float-end text-muted">Flexible Date Range</span>
+                        <div class="small text-muted">View and print/download sales for any date range</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Bills -->
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Faculty Bills</h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center py-4">
+                    <i class="fas fa-file-invoice fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Generate Faculty Bills</h5>
+                    <p class="text-muted">Select a customer to generate their bill for any period</p>
+                    <a href="{{ url_for('customers') }}" class="btn btn-primary">
+                        <i class="fas fa-users"></i> View Faculty
+                    </a>
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Tip:</strong> You can generate bills for individual faculty from their detail page or the faculty list.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Report Features</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center mb-3">
+                        <i class="fas fa-chart-line fa-2x text-primary mb-2"></i>
+                        <h6>Revenue Analysis</h6>
+                        <small class="text-muted">Track income trends and patterns</small>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <i class="fas fa-shopping-cart fa-2x text-success mb-2"></i>
+                        <h6>Order Tracking</h6>
+                        <small class="text-muted">Monitor order volumes and status</small>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <i class="fas fa-users fa-2x text-info mb-2"></i>
+                        <h6>Customer Insights</h6>
+                        <small class="text-muted">Analyze customer behavior and preferences</small>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <i class="fas fa-print fa-2x text-warning mb-2"></i>
+                        <h6>Printable Bills</h6>
+                        <small class="text-muted">Generate and print professional bills</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
